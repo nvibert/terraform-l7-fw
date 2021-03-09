@@ -24,3 +24,69 @@ resource "nsxt_policy_context_profile" "test" {
     }
   }
 }
+
+/*=====================================
+Create Security Group based on NSX Tags
+======================================*/
+resource "nsxt_policy_group" "Blue_VMs" {
+  display_name = "Blue_VMs"
+  description = "Terraform provisioned Group"
+  domain       = "cgw"
+  criteria {
+    condition {
+      key = "Tag"
+      member_type = "VirtualMachine"
+      operator = "EQUALS"
+      value = "Blue|NSX_tag"
+    }
+  }
+}
+
+resource "nsxt_policy_group" "Red_VMs" {
+  display_name = "Red_VMs"
+  description  = "Terraform provisioned Group"
+  domain       = "cgw"
+  criteria {
+    condition {
+      key = "Tag"
+      member_type = "VirtualMachine"
+      operator = "EQUALS"
+      value = "Red|NSX_tag"
+    }
+  }
+}
+
+/*=====================================
+Create DFW rules
+======================================*/
+
+resource "nsxt_policy_security_policy" "Colors" {
+  display_name = "Colors"
+  description = "Terraform provisioned Security Policy"
+  category = "Application"
+  domain = "cgw"
+  locked = false
+  stateful = true
+  tcp_strict = false
+
+  rule {
+    display_name = "Blue2Red"
+    source_groups = [
+      nsxt_policy_group.Blue_VMs.path]
+    destination_groups = [
+      nsxt_policy_group.Red_VMs.path]
+    action = "DROP"
+    services = ["/infra/services/ICMP-ALL"]
+    logged = true
+  }
+  rule {
+    display_name = "Red2Blue"
+    source_groups = [
+      nsxt_policy_group.Red_VMs.path]
+    destination_groups = [
+      nsxt_policy_group.Blue_VMs.path]
+    action = "DROP"
+    services = ["/infra/services/ICMP-ALL"]
+    logged = true
+  }
+}
