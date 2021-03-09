@@ -89,4 +89,15 @@ resource "nsxt_policy_security_policy" "Colors" {
     services = ["/infra/services/ICMP-ALL"]
     logged = true
   }
+  rule {
+    display_name = "Context-Aware Profile"
+    source_groups = [
+      nsxt_policy_group.Red_VMs.path]
+    destination_groups = [
+      nsxt_policy_group.Blue_VMs.path]
+    action = "DROP"
+    services = ["/infra/services/ICMP-ALL"]
+    profiles = [nsxt_policy_context_profile.test.path]
+    logged = true
+  }
 }
