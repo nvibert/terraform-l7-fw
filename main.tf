@@ -1,3 +1,14 @@
+
+provider "nsxt" {
+  host                 = var.host
+  vmc_token            = var.vmc_token
+  allow_unverified_ssl = true
+  enforcement_point    = "vmc-enforcementpoint"
+}
+
+variable host {}
+variable vmc_token {}
+
 resource "nsxt_policy_context_profile" "test" {
   display_name = "test"
   description  = "Terraform provisioned ContextProfile"
