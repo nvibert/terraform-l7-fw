@@ -118,6 +118,6 @@ resource "nsxt_policy_intrusion_service_policy" "policy1" {
     action             = "DETECT"
     services           = ["/infra/services/ICMP-ALL"]
     logged             = true
-    ids_profiles       = [data.nsxt_policy_ids_profile.default.path]
+    ids_profiles       = ["/infra/settings/firewall/security/intrusion-services/profiles/DefaultIDSProfile"]
   }
 }
