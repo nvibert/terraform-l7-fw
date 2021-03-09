@@ -101,3 +101,23 @@ resource "nsxt_policy_security_policy" "Colors" {
     logged = true
   }
 }
+
+data "nsxt_policy_ids_profile" "default" {
+  display_name = "DefaultIDSProfile"
+}
+
+resource "nsxt_policy_intrusion_service_policy" "policy1" {
+  display_name = "policy1"
+  description  = "Terraform provisioned Policy"
+  locked       = false
+  stateful     = true
+
+  rule {
+    display_name       = "rule1"
+    destination_groups = [nsxt_policy_group.Red_VMs.path]
+    action             = "DETECT"
+    services           = ["/infra/services/ICMP-ALL"]
+    logged             = true
+    ids_profiles       = [data.nsxt_policy_ids_profile.default.path]
+  }
+}
