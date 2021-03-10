@@ -1,4 +1,3 @@
-
 provider "nsxt" {
   host                 = var.host
   vmc_token            = var.vmc_token
@@ -6,8 +5,8 @@ provider "nsxt" {
   enforcement_point    = "vmc-enforcementpoint"
 }
 
-variable host {}
-variable vmc_token {}
+variable "host" {}
+variable "vmc_token" {}
 
 resource "nsxt_policy_context_profile" "test" {
   display_name = "test"
@@ -30,14 +29,14 @@ Create Security Group based on NSX Tags
 ======================================*/
 resource "nsxt_policy_group" "Blue_VMs" {
   display_name = "Blue_VMs"
-  description = "Terraform provisioned Group"
+  description  = "Terraform provisioned Group"
   domain       = "cgw"
   criteria {
     condition {
-      key = "Tag"
+      key         = "Tag"
       member_type = "VirtualMachine"
-      operator = "EQUALS"
-      value = "Blue|NSX_tag"
+      operator    = "EQUALS"
+      value       = "Blue|NSX_tag"
     }
   }
 }
@@ -48,10 +47,10 @@ resource "nsxt_policy_group" "Red_VMs" {
   domain       = "cgw"
   criteria {
     condition {
-      key = "Tag"
+      key         = "Tag"
       member_type = "VirtualMachine"
-      operator = "EQUALS"
-      value = "Red|NSX_tag"
+      operator    = "EQUALS"
+      value       = "Red|NSX_tag"
     }
   }
 }
@@ -62,63 +61,96 @@ Create DFW rules
 
 resource "nsxt_policy_security_policy" "Colors" {
   display_name = "Colors"
-  description = "Terraform provisioned Security Policy"
-  category = "Application"
-  domain = "cgw"
-  locked = false
-  stateful = true
-  tcp_strict = false
+  description  = "Terraform provisioned Security Policy"
+  category     = "Application"
+  domain       = "cgw"
+  locked       = false
+  stateful     = true
+  tcp_strict   = false
 
   rule {
     display_name = "Blue2Red"
     source_groups = [
-      nsxt_policy_group.Blue_VMs.path]
+    nsxt_policy_group.Blue_VMs.path]
     destination_groups = [
-      nsxt_policy_group.Red_VMs.path]
-    action = "DROP"
+    nsxt_policy_group.Red_VMs.path]
+    action   = "DROP"
     services = ["/infra/services/ICMP-ALL"]
-    logged = true
+    logged   = true
   }
   rule {
     display_name = "Red2Blue"
     source_groups = [
-      nsxt_policy_group.Red_VMs.path]
+    nsxt_policy_group.Red_VMs.path]
     destination_groups = [
-      nsxt_policy_group.Blue_VMs.path]
-    action = "DROP"
+    nsxt_policy_group.Blue_VMs.path]
+    action   = "DROP"
     services = ["/infra/services/ICMP-ALL"]
-    logged = true
+    logged   = true
   }
   rule {
     display_name = "Context-Aware Profile"
     source_groups = [
-      nsxt_policy_group.Red_VMs.path]
+    nsxt_policy_group.Red_VMs.path]
     destination_groups = [
-      nsxt_policy_group.Blue_VMs.path]
-    action = "DROP"
+    nsxt_policy_group.Blue_VMs.path]
+    action   = "DROP"
     services = ["/infra/services/ICMP-ALL"]
     profiles = [nsxt_policy_context_profile.test.path]
-    logged = true
+    logged   = true
   }
 }
-/*
-data "nsxt_policy_ids_profile" "default" {
-  display_name = "DefaultIDSProfile"
-}
-*/
 
 resource "nsxt_policy_intrusion_service_policy" "policy1" {
   display_name = "policy1"
   description  = "Terraform provisioned Policy"
   locked       = false
   stateful     = true
-
+  domain       = "cgw"
   rule {
     display_name       = "rule1"
     destination_groups = [nsxt_policy_group.Red_VMs.path]
     action             = "DETECT"
     services           = ["/infra/services/ICMP-ALL"]
     logged             = true
-    ids_profiles       = ["/infra/settings/firewall/security/intrusion-services/profiles/DefaultIDSProfile"]
+    ids_profiles       = ["/infra/settings/firewall/security/intrusion-services/
+profiles/DefaultIDSProfile"]
   }
+}
+
+resource "nsxt_policy_intrusion_service_profile" "profile1" {
+  display_name = "test"
+  description  = "Terraform provisioned Profile"
+  severities   = ["HIGH", "CRITICAL"]
+
+  criteria {
+    attack_types      = ["trojan-activity", "successful-admin"]
+    products_affected = ["Linux"]
+  }
+
+  overridden_signature {
+    signature_id = "2026323"
+    action       = "REJECT"
+  }
+
+  overridden_signature {
+    signature_id = "2026324"
+    action       = "REJECT"
+  }
+}
+
+resource "nsxt_policy_intrusion_service_profile" "profile2" {
+  display_name = "Network-Scan-Policy"
+  description  = "Terraform-provisioned Profile for network-scanning"
+  severities   = ["HIGH", "CRITICAL", "MEDIUM", "LOW"]
+
+  criteria {
+    attack_types      = ["network-scan"]
+  }
+
+  overridden_signature {
+    action       = "REJECT"
+    enabled      = false
+    signature_id = "2019876"
+        }
 }
