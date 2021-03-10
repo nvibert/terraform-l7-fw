@@ -101,7 +101,7 @@ resource "nsxt_policy_security_policy" "Colors" {
     logged = true
   }
 }
-*/
+/*
 data "nsxt_policy_ids_profile" "default" {
   display_name = "DefaultIDSProfile"
 }
