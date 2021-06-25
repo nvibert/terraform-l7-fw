@@ -101,6 +101,10 @@ resource "nsxt_policy_security_policy" "Colors" {
   }
 }
 
+data "nsxt_policy_intrusion_service_profile" "defaultProfile" {
+  display_name = "DefaultIDSProfile"
+}
+
 resource "nsxt_policy_intrusion_service_policy" "policy1" {
   display_name = "policy1"
   description  = "Terraform provisioned Policy"
@@ -113,7 +117,7 @@ resource "nsxt_policy_intrusion_service_policy" "policy1" {
     action             = "DETECT"
     services           = ["/infra/services/ICMP-ALL"]
     logged             = true
-    ids_profiles       = ["/infra/settings/firewall/security/intrusion-services/profiles/DefaultIDSProfile"]
+    ids_profiles       = [data.nsxt_policy_intrusion_service_profile.defaultProfile]
   }
 }
 
