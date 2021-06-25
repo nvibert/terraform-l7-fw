@@ -80,7 +80,7 @@ resource "nsxt_policy_security_policy" "Colors" {
 }
 
 /*=====================================
-Create Profiles or Refer to existing Profile
+Create Profiles or Refer to existing Default Profile
 ======================================*/
   
 resource "nsxt_policy_intrusion_service_profile" "networkScanProfile" {
