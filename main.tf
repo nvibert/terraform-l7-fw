@@ -78,8 +78,7 @@ resource "nsxt_policy_security_policy" "Colors" {
     destination_groups = [
     nsxt_policy_group.Blue_VMs.path]
     action   = "DROP"
-    services = ["/infra/services/ICMP-ALL"]
-    profiles = [nsxt_policy_context_profile.test.path]
+    profiles = [nsxt_policy_context_profile.contextProfile.path]
     logged   = true
   }
 }
@@ -138,7 +137,7 @@ resource "nsxt_policy_intrusion_service_policy" "policyBasedOnNetworkScanProfile
     destination_groups = [nsxt_policy_group.Red_VMs.path]
     action             = "DETECT"
     logged             = true
-    ids_profiles       = [data.nsxt_policy_intrusion_service_profile.defaultProfile.path]
+    ids_profiles       = [nsxt_policy_intrusion_service_profile.networkScanProfile.path]
   }
 }
 
