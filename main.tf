@@ -8,19 +8,16 @@ provider "nsxt" {
 variable "host" {}
 variable "vmc_token" {}
 
-resource "nsxt_policy_context_profile" "test" {
-  display_name = "test"
+resource "nsxt_policy_context_profile" "contextProfile" {
+  display_name = "Context Profile"
   description  = "Terraform provisioned ContextProfile"
   domain_name {
     description = "test-domain-name-attribute"
-    value       = ["*-myfiles.sharepoint.com"]
+    value       = ["nicovibert.com"]
   }
   app_id {
     description = "test-app-id-attribute"
-    value       = ["SSL"]
-    sub_attribute {
-      tls_version = ["SSL_V3"]
-    }
+    value       = ["HTTPS"]
   }
 }
 
@@ -55,6 +52,25 @@ resource "nsxt_policy_group" "Red_VMs" {
   }
 }
 
+
+/*=====================================
+Create Context Profile
+======================================*/
+
+resource "nsxt_policy_context_profile" "contextProfile" {
+  display_name = "Context Profile"
+  description  = "Terraform provisioned ContextProfile"
+  domain_name {
+    description = "test-domain-name-attribute"
+    value       = ["nicovibert.com"]
+  }
+  app_id {
+    description = "test-app-id-attribute"
+    value       = ["HTTPS"]
+  }
+}
+
+
 /*=====================================
 Create DFW rules
 ======================================*/
@@ -69,26 +85,6 @@ resource "nsxt_policy_security_policy" "Colors" {
   tcp_strict   = false
 
   rule {
-    display_name = "Blue2Red"
-    source_groups = [
-    nsxt_policy_group.Blue_VMs.path]
-    destination_groups = [
-    nsxt_policy_group.Red_VMs.path]
-    action   = "DROP"
-    services = ["/infra/services/ICMP-ALL"]
-    logged   = true
-  }
-  rule {
-    display_name = "Red2Blue"
-    source_groups = [
-    nsxt_policy_group.Red_VMs.path]
-    destination_groups = [
-    nsxt_policy_group.Blue_VMs.path]
-    action   = "DROP"
-    services = ["/infra/services/ICMP-ALL"]
-    logged   = true
-  }
-  rule {
     display_name = "Context-Aware Profile"
     source_groups = [
     nsxt_policy_group.Red_VMs.path]
@@ -101,48 +97,11 @@ resource "nsxt_policy_security_policy" "Colors" {
   }
 }
 
-data "nsxt_policy_intrusion_service_profile" "defaultProfile" {
-  display_name = "DefaultIDSProfile"
-}
-
-resource "nsxt_policy_intrusion_service_policy" "policy1" {
-  display_name = "policy1"
-  description  = "Terraform provisioned Policy"
-  locked       = false
-  stateful     = true
-  domain       = "cgw"
-  rule {
-    display_name       = "rule1"
-    destination_groups = [nsxt_policy_group.Red_VMs.path]
-    action             = "DETECT"
-    services           = ["/infra/services/ICMP-ALL"]
-    logged             = true
-    ids_profiles       = [data.nsxt_policy_intrusion_service_profile.defaultProfile]
-  }
-}
-
-resource "nsxt_policy_intrusion_service_profile" "profile1" {
-  display_name = "test"
-  description  = "Terraform provisioned Profile"
-  severities   = ["HIGH", "CRITICAL"]
-
-  criteria {
-    attack_types      = ["trojan-activity", "successful-admin"]
-    products_affected = ["Linux"]
-  }
-
-  overridden_signature {
-    signature_id = "2026323"
-    action       = "REJECT"
-  }
-
-  overridden_signature {
-    signature_id = "2026324"
-    action       = "REJECT"
-  }
-}
-
-resource "nsxt_policy_intrusion_service_profile" "profile2" {
+/*=====================================
+Create Profiles or Refer to existing Profile
+======================================*/
+  
+resource "nsxt_policy_intrusion_service_profile" "networkScanProfile" {
   display_name = "Network-Scan-Policy"
   description  = "Terraform-provisioned Profile for network-scanning"
   severities   = ["HIGH", "CRITICAL", "MEDIUM", "LOW"]
@@ -153,7 +112,47 @@ resource "nsxt_policy_intrusion_service_profile" "profile2" {
 
   overridden_signature {
     action       = "REJECT"
-    enabled      = false
+    enabled      = true
     signature_id = "2019876"
         }
 }
+data "nsxt_policy_intrusion_service_profile" "defaultProfile" {
+  display_name = "DefaultIDSProfile"
+}
+
+/*=====================================
+Create IPS Policies and Rules
+======================================*/
+  
+
+resource "nsxt_policy_intrusion_service_policy" "policyBasedDefaultProfile" {
+  display_name = "Policy based on the default IDS/IPS Profile"
+  description  = "Terraform provisioned Policy"
+  locked       = false
+  stateful     = true
+  domain       = "cgw"
+  rule {
+    display_name       = "rule1"
+    destination_groups = [nsxt_policy_group.Red_VMs.path]
+    action             = "DETECT"
+    logged             = true
+    ids_profiles       = [data.nsxt_policy_intrusion_service_profile.defaultProfile.path]
+  }
+}
+
+resource "nsxt_policy_intrusion_service_policy" "policyBasedOnNetworkScanProfile" {
+  display_name = "Policy based on the newly created Network Scan profile"
+  description  = "Terraform provisioned Policy"
+  locked       = false
+  stateful     = true
+  domain       = "cgw"
+  rule {
+    display_name       = "rule for Network Scan"
+    destination_groups = [nsxt_policy_group.Red_VMs.path]
+    action             = "DETECT"
+    logged             = true
+    ids_profiles       = [data.nsxt_policy_intrusion_service_profile.defaultProfile.path]
+  }
+}
+
+
