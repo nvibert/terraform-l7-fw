@@ -51,10 +51,6 @@ resource "nsxt_policy_context_profile" "contextProfile" {
     description = "test-domain-name-attribute"
     value       = ["*.itunes.apple.com"]
   }
-  app_id {
-    description = "test-app-id-attribute"
-    value       = ["HTTPS"]
-  }
 }
 
 
