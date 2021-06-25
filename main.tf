@@ -8,19 +8,6 @@ provider "nsxt" {
 variable "host" {}
 variable "vmc_token" {}
 
-resource "nsxt_policy_context_profile" "contextProfile" {
-  display_name = "Context Profile"
-  description  = "Terraform provisioned ContextProfile"
-  domain_name {
-    description = "test-domain-name-attribute"
-    value       = ["nicovibert.com"]
-  }
-  app_id {
-    description = "test-app-id-attribute"
-    value       = ["HTTPS"]
-  }
-}
-
 /*=====================================
 Create Security Group based on NSX Tags
 ======================================*/
