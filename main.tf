@@ -49,7 +49,7 @@ resource "nsxt_policy_context_profile" "contextProfile" {
   description  = "Terraform provisioned ContextProfile"
   domain_name {
     description = "test-domain-name-attribute"
-    value       = ["nicovibert.com"]
+    value       = ["*.itunes.apple.com"]
   }
   app_id {
     description = "test-app-id-attribute"
