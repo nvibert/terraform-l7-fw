@@ -74,9 +74,7 @@ resource "nsxt_policy_security_policy" "NSXAdvancedFW" {
     display_name = "DNS Snooping"
     source_groups = [
     nsxt_policy_group.Red_VMs.path]
-    destination_groups = [
-    nsxt_policy_group.Blue_VMs.path]
-    services = ["DNS","DNS-UDP"]
+    services = ["/infra/services/DNS","/infra/services/DNS-UDP"]
     action   = "ALLOW"
     profiles = [data.nsxt_policy_context_profile.defaultDNSProfile.path]
     logged   = true
@@ -85,8 +83,6 @@ resource "nsxt_policy_security_policy" "NSXAdvancedFW" {
     display_name = "Context-Aware Profile"
     source_groups = [
     nsxt_policy_group.Red_VMs.path]
-    destination_groups = [
-    nsxt_policy_group.Blue_VMs.path]
     action   = "DROP"
     profiles = [nsxt_policy_context_profile.contextProfile.path]
     logged   = true
