@@ -46,7 +46,7 @@ Create Context Profile
 
 resource "nsxt_policy_context_profile" "contextProfile" {
   display_name = "Context Profile"
-  description  = "Terraform-provisioned ContextProfile"
+  description  = "Terraform provisioned ContextProfile"
   domain_name {
     description = "test-domain-name-attribute"
     value       = ["*.itunes.apple.com"]
