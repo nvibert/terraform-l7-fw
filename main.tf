@@ -53,20 +53,34 @@ resource "nsxt_policy_context_profile" "contextProfile" {
   }
 }
 
+data "nsxt_policy_context_profile" "defaultDNSProfile" {
+  display_name = "DNS"
+}
 
 /*=====================================
 Create DFW rules
 ======================================*/
 
-resource "nsxt_policy_security_policy" "Colors" {
-  display_name = "Colors"
+resource "nsxt_policy_security_policy" "NSXAdvancedFW" {
+  display_name = "NSX Advanced FW"
   description  = "Terraform provisioned Security Policy"
   category     = "Application"
   domain       = "cgw"
   locked       = false
   stateful     = true
   tcp_strict   = false
-
+   
+  rule {
+    display_name = "DNS Snooping"
+    source_groups = [
+    nsxt_policy_group.Red_VMs.path]
+    destination_groups = [
+    nsxt_policy_group.Blue_VMs.path]
+    services = ["DNS","DNS-UDP"]
+    action   = "ALLOW"
+    profiles = [nsxt_policy_context_profile.defaultDNSProfile.path]
+    logged   = true
+  }
   rule {
     display_name = "Context-Aware Profile"
     source_groups = [
