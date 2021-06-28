@@ -9,7 +9,7 @@ variable "host" {}
 variable "vmc_token" {}
 
 /*=====================================
-Create Security Group based on NSX Tags
+Create Security Group based on NSX Tag
 ======================================*/
 resource "nsxt_policy_group" "Blue_VMs" {
   display_name = "Blue_VMs"
