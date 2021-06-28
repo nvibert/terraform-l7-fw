@@ -78,7 +78,7 @@ resource "nsxt_policy_security_policy" "NSXAdvancedFW" {
     nsxt_policy_group.Blue_VMs.path]
     services = ["DNS","DNS-UDP"]
     action   = "ALLOW"
-    profiles = [nsxt_policy_context_profile.defaultDNSProfile.path]
+    profiles = [data.nsxt_policy_context_profile.defaultDNSProfile.path]
     logged   = true
   }
   rule {
