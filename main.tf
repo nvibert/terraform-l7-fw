@@ -13,7 +13,7 @@ Create Security Group based on NSX Tag
 ======================================*/
 resource "nsxt_policy_group" "Blue_VMs" {
   display_name = "Blue_VMs"
-  description  = "Terraform provisioned Group"
+  description  = "Terraform-provisioned Group"
   domain       = "cgw"
   criteria {
     condition {
